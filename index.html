@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Analysis of Medicare Inpatient Claims for 2011</title>
+
+<script src="site_libs/jquery-1.12.4/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.3/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet" />
+<script src="site_libs/datatables-binding-0.5/datatables.js"></script>
+<link href="site_libs/dt-core-1.10.16/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="site_libs/dt-core-1.10.16/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="site_libs/dt-core-1.10.16/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.0.0/css/crosstalk.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.0.0/js/crosstalk.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Recent Projects</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Top Medicare Inpatient Procedures</a>
+</li>
+<li>
+  <a href="housing.html">Multiple Linear Regression for Jax Housing</a>
+</li>
+<li>
+  <a href="knn_heart.html">K-NN to Predict Heart Disease</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Analysis of Medicare Inpatient Claims for 2011</h1>
+
+</div>
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>Why does it cost Medicare $28,000 for a joint replacement in Maryland but only $17,000 in Alabama?</p>
+<p>Why do some hospitals charge 3 or 4 or even 10 times the amount that they know they will actually be paid for a service/procedure?</p>
+<p>To address the first question there is something in healthcare called Hospital Referral Regions (HRR’s). In a nutshell, some areas of the country are more expensive. More can be read on HRR’s here: <a href="https://www.dartmouthatlas.org/">link</a></p>
+<p>Furthermore, Medicare only pays 80% of their allowed amount for a procedure with the remaining 20% falling to the patient (or secondary insurance if the patient has it). Because Medicare patients can visit any facility in the country that takes Medicare, it may make financial sense for someone in Alaska to fly to Alabama to have their hip replaced.</p>
+<p>For the second question we will examine the correlation of hospital charges and the actual amount that they collect.</p>
+</div>
+<div id="the-data" class="section level2">
+<h2>The Data</h2>
+<p>The dataset contains the top 100 inpatient procedures for Medicare paitents for the year 2011. This includes hospitals in all states, including Washington DC, for a total of 163,065 unique entries.</p>
+<p>Each entry has information for the average charge for each facility for the top 100 procedures, the average Medicare payment (Medicare’s 80% of the allowable), and the average total payment (Medicare’s 80% plus any patient deductibles, coinsurance, or payments from secondary payers).</p>
+<p>I have included all of the R code in this document.</p>
+<p>You can download the data <a href="https://data.cms.gov/Medicare-Inpatient/Inpatient-Prospective-Payment-System-IPPS-Provider/97k6-zzx3">here</a></p>
+<div id="first-read-in-the-needed-libraries" class="section level4">
+<h4>First read in the needed libraries</h4>
+<pre class="r"><code>library(readr)
+library(dplyr)
+library(ggplot2)
+library(ggalt)
+library(DT)</code></pre>
+</div>
+<div id="next-read-in-the-dataset-referenced-above" class="section level4">
+<h4>Next read in the dataset referenced above</h4>
+<pre class="r"><code>ipp &lt;- read_csv(&quot;Inpatient_Prospective_Payment_System__IPPS__Provider_Summary_for_the_Top_100_Diagnosis-Related_Groups__DRG__-_FY2011.csv&quot;)</code></pre>
+</div>
+<div id="we-will-change-the-names-to-make-it-easier-to-write-the-code-by-removing-spaces" class="section level4">
+<h4>We will change the names to make it easier to write the code by removing spaces</h4>
+<pre class="r"><code>names(ipp) &lt;- c(&quot;DRGDefinition&quot;, &quot;ProviderId&quot;, &quot;ProviderName&quot;,  &quot;ProviderStreetAddress&quot;,                 &quot;ProviderCity&quot;, &quot;ProviderState&quot;, &quot;ProviderZipCode&quot;,
+                &quot;HospitalReferralRegionDescription&quot;, &quot;TotalDischarges&quot;,
+                &quot;AverageCoveredCharges&quot;, &quot;AverageTotalPayments&quot;, 
+                &quot;AverageMedicarePayments&quot;)</code></pre>
+</div>
+</div>
+<div id="top-procedures-among-the-top-100-procedures" class="section level2">
+<h2>Top Procedures Among the Top 100 Procedures</h2>
+<p>As mentioned, this dataset includes the top 100 inpatient procedures that Medicare pays for. The below table ranks those procedures by the sum of discharges nationwide.</p>
+<p>We see that Major Joint Replacement is the most common inpatient procedure with 427,207 discharges in 2011, and Laparoscopic Cholecystectomy is ranked at 100 with 16,157 discharges.</p>
+<pre class="r"><code>procedure_rank &lt;- ipp %&gt;%
+  group_by(DRGDefinition) %&gt;%
+  summarise(Procedure_Count = sum(TotalDischarges)) %&gt;%
+  arrange(desc(Procedure_Count))
+
+datatable(procedure_rank) %&gt;%
+  formatCurrency(&#39;Procedure_Count&#39;,currency = &quot;&quot;, interval = 3, mark = &quot;,&quot;, digits = 0)</code></pre>
+<div id="htmlwidget-576a4d8f27f40b5ff6a5" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-576a4d8f27f40b5ff6a5">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100"],["470 - MAJOR JOINT REPLACEMENT OR REATTACHMENT OF LOWER EXTREMITY W/O MCC","871 - SEPTICEMIA OR SEVERE SEPSIS W/O MV 96+ HOURS W MCC","392 - ESOPHAGITIS, GASTROENT &amp; MISC DIGEST DISORDERS W/O MCC","292 - HEART FAILURE &amp; SHOCK W CC","690 - KIDNEY &amp; URINARY TRACT INFECTIONS W/O MCC","194 - SIMPLE PNEUMONIA &amp; PLEURISY W CC","291 - HEART FAILURE &amp; SHOCK W MCC","641 - MISC DISORDERS OF NUTRITION,METABOLISM,FLUIDS/ELECTROLYTES W/O MCC","683 - RENAL FAILURE W CC","190 - CHRONIC OBSTRUCTIVE PULMONARY DISEASE W MCC","191 - CHRONIC OBSTRUCTIVE PULMONARY DISEASE W CC","312 - SYNCOPE &amp; COLLAPSE","603 - CELLULITIS W/O MCC","378 - G.I. HEMORRHAGE W CC","313 - CHEST PAIN","193 - SIMPLE PNEUMONIA &amp; PLEURISY W MCC","287 - CIRCULATORY DISORDERS EXCEPT AMI, W CARD CATH W/O MCC","192 - CHRONIC OBSTRUCTIVE PULMONARY DISEASE W/O CC/MCC","310 - CARDIAC ARRHYTHMIA &amp; CONDUCTION DISORDERS W/O CC/MCC","872 - SEPTICEMIA OR SEVERE SEPSIS W/O MV 96+ HOURS W/O MCC","247 - PERC CARDIOVASC PROC W DRUG-ELUTING STENT W/O MCC","065 - INTRACRANIAL HEMORRHAGE OR CEREBRAL INFARCTION W CC","309 - CARDIAC ARRHYTHMIA &amp; CONDUCTION DISORDERS W CC","682 - RENAL FAILURE W MCC","189 - PULMONARY EDEMA &amp; RESPIRATORY FAILURE","812 - RED BLOOD CELL DISORDERS W/O MCC","885 - PSYCHOSES","293 - HEART FAILURE &amp; SHOCK W/O CC/MCC","195 - SIMPLE PNEUMONIA &amp; PLEURISY W/O CC/MCC","069 - TRANSIENT ISCHEMIA","481 - HIP &amp; FEMUR PROCEDURES EXCEPT MAJOR JOINT W CC","208 - RESPIRATORY SYSTEM DIAGNOSIS W VENTILATOR SUPPORT &lt;96 HOURS","177 - RESPIRATORY INFECTIONS &amp; INFLAMMATIONS W MCC","689 - KIDNEY &amp; URINARY TRACT INFECTIONS W MCC","460 - SPINAL FUSION EXCEPT CERVICAL W/O MCC","280 - ACUTE MYOCARDIAL INFARCTION, DISCHARGED ALIVE W MCC","552 - MEDICAL BACK PROBLEMS W/O MCC","064 - INTRACRANIAL HEMORRHAGE OR CEREBRAL INFARCTION W MCC","308 - CARDIAC ARRHYTHMIA &amp; CONDUCTION DISORDERS W MCC","640 - MISC DISORDERS OF NUTRITION,METABOLISM,FLUIDS/ELECTROLYTES W MCC","178 - RESPIRATORY INFECTIONS &amp; INFLAMMATIONS W CC","066 - INTRACRANIAL HEMORRHAGE OR CEREBRAL INFARCTION W/O CC/MCC","314 - OTHER CIRCULATORY SYSTEM DIAGNOSES W MCC","330 - MAJOR SMALL &amp; LARGE BOWEL PROCEDURES W CC","948 - SIGNS &amp; SYMPTOMS W/O MCC","101 - SEIZURES W/O MCC","377 - G.I. HEMORRHAGE W MCC","638 - DIABETES W CC","389 - G.I. OBSTRUCTION W CC","391 - ESOPHAGITIS, GASTROENT &amp; MISC DIGEST DISORDERS W MCC","394 - OTHER DIGESTIVE SYSTEM DIAGNOSES W CC","281 - ACUTE MYOCARDIAL INFARCTION, DISCHARGED ALIVE W CC","853 - INFECTIOUS &amp; PARASITIC DISEASES W O.R. PROCEDURE W MCC","300 - PERIPHERAL VASCULAR DISORDERS W CC","329 - MAJOR SMALL &amp; LARGE BOWEL PROCEDURES W MCC","253 - OTHER VASCULAR PROCEDURES W CC","238 - MAJOR CARDIOVASC PROCEDURES W/O MCC","491 - BACK &amp; NECK PROC EXC SPINAL FUSION W/O CC/MCC","252 - OTHER VASCULAR PROCEDURES W MCC","039 - EXTRACRANIAL PROCEDURES W/O CC/MCC","379 - G.I. HEMORRHAGE W/O CC/MCC","249 - PERC CARDIOVASC PROC W NON-DRUG-ELUTING STENT W/O MCC","202 - BRONCHITIS &amp; ASTHMA W CC/MCC","176 - PULMONARY EMBOLISM W/O MCC","897 - ALCOHOL/DRUG ABUSE OR DEPENDENCE W/O REHABILITATION THERAPY W/O MCC","390 - G.I. OBSTRUCTION W/O CC/MCC","057 - DEGENERATIVE NERVOUS SYSTEM DISORDERS W/O MCC","303 - ATHEROSCLEROSIS W/O MCC","243 - PERMANENT CARDIAC PACEMAKER IMPLANT W CC","918 - POISONING &amp; TOXIC EFFECTS OF DRUGS W/O MCC","251 - PERC CARDIOVASC PROC W/O CORONARY ARTERY STENT W/O MCC","372 - MAJOR GASTROINTESTINAL DISORDERS &amp; PERITONEAL INFECTIONS W CC","244 - PERMANENT CARDIAC PACEMAKER IMPLANT W/O CC/MCC","246 - PERC CARDIOVASC PROC W DRUG-ELUTING STENT W MCC OR 4+ VESSELS/STENTS","207 - RESPIRATORY SYSTEM DIAGNOSIS W VENTILATOR SUPPORT 96+ HOURS","254 - OTHER VASCULAR PROCEDURES W/O CC/MCC","305 - HYPERTENSION W/O MCC","811 - RED BLOOD CELL DISORDERS W MCC","473 - CERVICAL SPINAL FUSION W/O CC/MCC","699 - OTHER KIDNEY &amp; URINARY TRACT DIAGNOSES W CC","149 - DYSEQUILIBRIUM","536 - FRACTURES OF HIP &amp; PELVIS W/O MCC","870 - SEPTICEMIA OR SEVERE SEPSIS W MV 96+ HOURS","698 - OTHER KIDNEY &amp; URINARY TRACT DIAGNOSES W MCC","286 - CIRCULATORY DISORDERS EXCEPT AMI, W CARD CATH W MCC","074 - CRANIAL &amp; PERIPHERAL NERVE DISORDERS W/O MCC","282 - ACUTE MYOCARDIAL INFARCTION, DISCHARGED ALIVE W/O CC/MCC","482 - HIP &amp; FEMUR PROCEDURES EXCEPT MAJOR JOINT W/O CC/MCC","563 - FX, SPRN, STRN &amp; DISL EXCEPT FEMUR, HIP, PELVIS &amp; THIGH W/O MCC","684 - RENAL FAILURE W/O CC/MCC","469 - MAJOR JOINT REPLACEMENT OR REATTACHMENT OF LOWER EXTREMITY W MCC","418 - LAPAROSCOPIC CHOLECYSTECTOMY W/O C.D.E. W CC","439 - DISORDERS OF PANCREAS EXCEPT MALIGNANCY W CC","480 - HIP &amp; FEMUR PROCEDURES EXCEPT MAJOR JOINT W MCC","602 - CELLULITIS W MCC","315 - OTHER CIRCULATORY SYSTEM DIAGNOSES W CC","917 - POISONING &amp; TOXIC EFFECTS OF DRUGS W MCC","301 - PERIPHERAL VASCULAR DISORDERS W/O CC/MCC","203 - BRONCHITIS &amp; ASTHMA W/O CC/MCC","419 - LAPAROSCOPIC CHOLECYSTECTOMY W/O C.D.E. W/O CC/MCC"],[427207,319072,244854,222038,206695,198390,185599,153660,150444,149677,148491,141918,140894,138678,131079,127989,115920,114790,113454,112430,108272,106414,102484,101029,95099,92851,89733,89217,79873,79590,77525,68080,66660,66583,65997,63934,63116,62093,61060,56816,56100,55849,51079,50766,50411,48854,48398,48025,46860,43026,41346,40836,39482,38458,37250,36434,34669,34579,34222,33606,33393,32647,32086,32042,31935,31249,30212,30184,29646,29225,28583,28509,27951,27104,26412,26385,25205,24148,23834,23755,23427,22728,22624,22085,21820,21659,21596,20739,20278,19540,18714,18227,17948,17851,17714,17478,16952,16744,16577,16157]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>DRGDefinition<\/th>\n      <th>Procedure_Count<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":2},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"rowCallback":"function(row, data) {\nDTWidget.formatCurrency(this, row, data, 2, '', 0, 3, ',', '.', true);\n}"}},"evals":["options.rowCallback"],"jsHooks":[]}</script>
+</div>
+<div id="patient-responsibility" class="section level2">
+<h2>Patient Responsibility</h2>
+<p>Medicare will cover 80% of the Medicare allowable. The remaining 20% will either fall to the patient as coinsurance or to the patient’s secondary insurance. Since we are given the average Medicare payment for each hospital for each procedure we can work backwards to find the patient’s responsibility of 20%.</p>
+<p>The below table shows which states have the highest and lowest coinsurance for each procedure. Pay attention to the PercentageDifference column. This shows the percentage the difference between the highest Medicare payment in the country and the lowest.</p>
+<p>The corresponding max and min states are also included.</p>
+<pre class="r"><code>ipp_state_proc &lt;- ipp %&gt;%
+  group_by(ProviderState, DRGDefinition) %&gt;%
+  summarise(AverageCost = round(mean(AverageMedicarePayments),2))
+
+ipp_proc1 &lt;- ipp_state_proc %&gt;%
+  group_by(DRGDefinition) %&gt;%
+  summarise(MaxCost = round(max(AverageCost),2), MinCost = round(min(AverageCost),2), 
+            PercentageDifference = paste0(round((MaxCost / MinCost)*100,2),&quot;%&quot;)) %&gt;%
+  left_join(ipp_state_proc, by = c(&quot;DRGDefinition&quot; = &quot;DRGDefinition&quot;, 
+                                   &quot;MaxCost&quot; = &quot;AverageCost&quot;))
+
+ipp_proc2 &lt;- ipp_proc1 %&gt;%
+  left_join(ipp_state_proc, by = c(&quot;DRGDefinition&quot; = &quot;DRGDefinition&quot;, 
+                                   &quot;MinCost&quot; = &quot;AverageCost&quot;))
+
+names(ipp_proc2) &lt;- c(&quot;DRGDefinition&quot;, &quot;MaxCost&quot;, &quot;MinCost&quot;,
+                      &quot;PercentageDifference&quot;, &quot;MaxCostState&quot;, &quot;MinCostState&quot;)
+
+ipp_proc2 &lt;- ipp_proc2 %&gt;%
+  mutate(CopayMaxState = round((MaxCost/0.8)*0.2,2), 
+         CopayMinState = round((MinCost/0.8)*0.2,2)) %&gt;%
+  arrange(desc(CopayMaxState)) %&gt;%
+  select(c(1,4,5:8))
+
+datatable(ipp_proc2)</code></pre>
+<div id="htmlwidget-0f686d82739f23e8918c" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-0f686d82739f23e8918c">{"x":{"filter":"none","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100"],["329 - MAJOR SMALL &amp; LARGE BOWEL PROCEDURES W MCC","853 - INFECTIOUS &amp; PARASITIC DISEASES W O.R. PROCEDURE W MCC","870 - SEPTICEMIA OR SEVERE SEPSIS W MV 96+ HOURS","207 - RESPIRATORY SYSTEM DIAGNOSIS W VENTILATOR SUPPORT 96+ HOURS","460 - SPINAL FUSION EXCEPT CERVICAL W/O MCC","246 - PERC CARDIOVASC PROC W DRUG-ELUTING STENT W MCC OR 4+ VESSELS/STENTS","252 - OTHER VASCULAR PROCEDURES W MCC","238 - MAJOR CARDIOVASC PROCEDURES W/O MCC","469 - MAJOR JOINT REPLACEMENT OR REATTACHMENT OF LOWER EXTREMITY W MCC","330 - MAJOR SMALL &amp; LARGE BOWEL PROCEDURES W CC","480 - HIP &amp; FEMUR PROCEDURES EXCEPT MAJOR JOINT W MCC","208 - RESPIRATORY SYSTEM DIAGNOSIS W VENTILATOR SUPPORT &lt;96 HOURS","243 - PERMANENT CARDIAC PACEMAKER IMPLANT W CC","253 - OTHER VASCULAR PROCEDURES W CC","481 - HIP &amp; FEMUR PROCEDURES EXCEPT MAJOR JOINT W CC","064 - INTRACRANIAL HEMORRHAGE OR CEREBRAL INFARCTION W MCC","470 - MAJOR JOINT REPLACEMENT OR REATTACHMENT OF LOWER EXTREMITY W/O MCC","473 - CERVICAL SPINAL FUSION W/O CC/MCC","377 - G.I. HEMORRHAGE W MCC","871 - SEPTICEMIA OR SEVERE SEPSIS W/O MV 96+ HOURS W MCC","247 - PERC CARDIOVASC PROC W DRUG-ELUTING STENT W/O MCC","244 - PERMANENT CARDIAC PACEMAKER IMPLANT W/O CC/MCC","286 - CIRCULATORY DISORDERS EXCEPT AMI, W CARD CATH W MCC","314 - OTHER CIRCULATORY SYSTEM DIAGNOSES W MCC","251 - PERC CARDIOVASC PROC W/O CORONARY ARTERY STENT W/O MCC","280 - ACUTE MYOCARDIAL INFARCTION, DISCHARGED ALIVE W MCC","177 - RESPIRATORY INFECTIONS &amp; INFLAMMATIONS W MCC","291 - HEART FAILURE &amp; SHOCK W MCC","917 - POISONING &amp; TOXIC EFFECTS OF DRUGS W MCC","193 - SIMPLE PNEUMONIA &amp; PLEURISY W MCC","178 - RESPIRATORY INFECTIONS &amp; INFLAMMATIONS W CC","482 - HIP &amp; FEMUR PROCEDURES EXCEPT MAJOR JOINT W/O CC/MCC","682 - RENAL FAILURE W MCC","249 - PERC CARDIOVASC PROC W NON-DRUG-ELUTING STENT W/O MCC","698 - OTHER KIDNEY &amp; URINARY TRACT DIAGNOSES W MCC","189 - PULMONARY EDEMA &amp; RESPIRATORY FAILURE","418 - LAPAROSCOPIC CHOLECYSTECTOMY W/O C.D.E. W CC","254 - OTHER VASCULAR PROCEDURES W/O CC/MCC","602 - CELLULITIS W MCC","640 - MISC DISORDERS OF NUTRITION,METABOLISM,FLUIDS/ELECTROLYTES W MCC","190 - CHRONIC OBSTRUCTIVE PULMONARY DISEASE W MCC","308 - CARDIAC ARRHYTHMIA &amp; CONDUCTION DISORDERS W MCC","689 - KIDNEY &amp; URINARY TRACT INFECTIONS W MCC","811 - RED BLOOD CELL DISORDERS W MCC","065 - INTRACRANIAL HEMORRHAGE OR CEREBRAL INFARCTION W CC","391 - ESOPHAGITIS, GASTROENT &amp; MISC DIGEST DISORDERS W MCC","872 - SEPTICEMIA OR SEVERE SEPSIS W/O MV 96+ HOURS W/O MCC","292 - HEART FAILURE &amp; SHOCK W CC","372 - MAJOR GASTROINTESTINAL DISORDERS &amp; PERITONEAL INFECTIONS W CC","191 - CHRONIC OBSTRUCTIVE PULMONARY DISEASE W CC","885 - PSYCHOSES","194 - SIMPLE PNEUMONIA &amp; PLEURISY W CC","378 - G.I. HEMORRHAGE W CC","683 - RENAL FAILURE W CC","281 - ACUTE MYOCARDIAL INFARCTION, DISCHARGED ALIVE W CC","419 - LAPAROSCOPIC CHOLECYSTECTOMY W/O C.D.E. W/O CC/MCC","439 - DISORDERS OF PANCREAS EXCEPT MALIGNANCY W CC","287 - CIRCULATORY DISORDERS EXCEPT AMI, W CARD CATH W/O MCC","057 - DEGENERATIVE NERVOUS SYSTEM DISORDERS W/O MCC","699 - OTHER KIDNEY &amp; URINARY TRACT DIAGNOSES W CC","491 - BACK &amp; NECK PROC EXC SPINAL FUSION W/O CC/MCC","176 - PULMONARY EMBOLISM W/O MCC","066 - INTRACRANIAL HEMORRHAGE OR CEREBRAL INFARCTION W/O CC/MCC","074 - CRANIAL &amp; PERIPHERAL NERVE DISORDERS W/O MCC","394 - OTHER DIGESTIVE SYSTEM DIAGNOSES W CC","039 - EXTRACRANIAL PROCEDURES W/O CC/MCC","300 - PERIPHERAL VASCULAR DISORDERS W CC","315 - OTHER CIRCULATORY SYSTEM DIAGNOSES W CC","812 - RED BLOOD CELL DISORDERS W/O MCC","309 - CARDIAC ARRHYTHMIA &amp; CONDUCTION DISORDERS W CC","603 - CELLULITIS W/O MCC","690 - KIDNEY &amp; URINARY TRACT INFECTIONS W/O MCC","379 - G.I. HEMORRHAGE W/O CC/MCC","202 - BRONCHITIS &amp; ASTHMA W CC/MCC","192 - CHRONIC OBSTRUCTIVE PULMONARY DISEASE W/O CC/MCC","389 - G.I. OBSTRUCTION W CC","069 - TRANSIENT ISCHEMIA","638 - DIABETES W CC","101 - SEIZURES W/O MCC","948 - SIGNS &amp; SYMPTOMS W/O MCC","392 - ESOPHAGITIS, GASTROENT &amp; MISC DIGEST DISORDERS W/O MCC","195 - SIMPLE PNEUMONIA &amp; PLEURISY W/O CC/MCC","552 - MEDICAL BACK PROBLEMS W/O MCC","282 - ACUTE MYOCARDIAL INFARCTION, DISCHARGED ALIVE W/O CC/MCC","641 - MISC DISORDERS OF NUTRITION,METABOLISM,FLUIDS/ELECTROLYTES W/O MCC","293 - HEART FAILURE &amp; SHOCK W/O CC/MCC","301 - PERIPHERAL VASCULAR DISORDERS W/O CC/MCC","897 - ALCOHOL/DRUG ABUSE OR DEPENDENCE W/O REHABILITATION THERAPY W/O MCC","684 - RENAL FAILURE W/O CC/MCC","918 - POISONING &amp; TOXIC EFFECTS OF DRUGS W/O MCC","312 - SYNCOPE &amp; COLLAPSE","536 - FRACTURES OF HIP &amp; PELVIS W/O MCC","563 - FX, SPRN, STRN &amp; DISL EXCEPT FEMUR, HIP, PELVIS &amp; THIGH W/O MCC","313 - CHEST PAIN","149 - DYSEQUILIBRIUM","303 - ATHEROSCLEROSIS W/O MCC","305 - HYPERTENSION W/O MCC","310 - CARDIAC ARRHYTHMIA &amp; CONDUCTION DISORDERS W/O CC/MCC","390 - G.I. OBSTRUCTION W/O CC/MCC","203 - BRONCHITIS &amp; ASTHMA W/O CC/MCC"],["216.7%","211.75%","166.14%","184.24%","187.64%","173.92%","175.82%","177.9%","169.98%","209.55%","171.58%","220.48%","178.98%","174.34%","227.06%","214.77%","195.82%","194.34%","213.29%","198.33%","195.68%","184.29%","188.79%","191.54%","209.37%","189.77%","162.87%","204.07%","213.51%","205%","205.38%","204.17%","180.41%","174.83%","178.69%","224.65%","168.76%","174.26%","171.34%","215.87%","208.45%","191.82%","193.27%","174.5%","205.14%","185.8%","186.84%","203.69%","159.23%","215.52%","235.07%","201.97%","201.42%","201.09%","168.04%","172.33%","192.58%","184.82%","213.66%","187.76%","205.57%","172.98%","236.37%","205.46%","175.5%","176.34%","176.25%","172.29%","213.32%","207.31%","204.62%","202.43%","239.1%","196.41%","225.91%","163.77%","223.01%","183.13%","196.89%","219.58%","200.06%","210.94%","182.46%","180.43%","199.49%","196.91%","217.07%","218.26%","208.01%","215.25%","183.16%","195.07%","186.78%","235.86%","206.49%","210.78%","195.97%","213.16%","185.19%","210.2%"],["AK","DC","NY","AK","MD","AK","AK","MD","MD","AK","HI","AK","MD","VT","AK","AK","AK","MD","AK","AK","AK","MD","CA","AK","MD","AK","CA","AK","HI","AK","AK","AK","DC","MD","MD","MD","DC","VT","HI","AK","AK","DC","HI","DC","AK","DC","AK","AK","MD","AK","AK","AK","AK","AK","AK","WY","DC","AK","VT","VT","MD","MD","AK","UT","DC","DC","DC","DC","AK","AK","AK","AK","AK","MD","AK","MD","AK","AK","DC","AK","AK","AK","DC","HI","AK","AK","MD","DC","VT","VT","AK","HI","MD","AK","DC","DC","DC","AK","MD","NY"],["AL","AR","AR","WV","AL","AL","AR","AL","AL","AL","AL","AL","AL","AL","AL","KS","AL","AL","AL","AL","AL","AL","WV","KS","AR","AL","AL","TN","WY","AL","AL","AL","AL","WV","AR","AL","AL","UT","UT","AL","AL","AL","AL","AL","AL","AL","UT","AL","AL","AL","AL","AL","AL","AL","WV","AL","AL","AL","AL","MT","AR","AL","AL","AL","AL","AL","AL","AL","ID","AL","AL","AL","AL","AL","AL","AL","AL","AL","AL","AL","TN","AL","AL","AR","AL","AL","AL","UT","AL","AL","AL","AL","KS","AL","AR","AR","AR","AL","AL","KS"],[15911.51,15504.33,13577.04,13406.51,9032.94,7479.18,7286.25,7093.9,7043.12,6778.49,6742.98,6520.49,6032.85,5343.03,5300.6,5138.81,5049.13,4927.32,4907.14,4890.23,4761.47,4743.52,4699.93,4548.69,4503.35,4467.06,4291.73,3933.81,3826.3,3804.2,3788.25,3778.85,3767.28,3755.57,3618.72,3589.01,3452.81,3424.94,3052.03,3049.22,3024.54,2986.61,2856.68,2810.6,2785.24,2599.75,2553.16,2521.04,2502.51,2474.12,2447.17,2445.69,2423.33,2418.78,2409.25,2307.19,2292.25,2289.97,2286.65,2251.41,2202.06,2157.41,2064.61,2048.86,2033.56,2027.7,2023.63,2023.3,1991.45,1979.76,1920.09,1839.27,1800.23,1799.05,1785.03,1770.32,1726.21,1713.23,1674.07,1663.09,1616.16,1606.83,1598.68,1576.41,1560.29,1536.32,1491.47,1470.86,1455.69,1450.05,1440.9,1403.19,1395.96,1306.87,1259.12,1237.56,1216.37,1202.98,1196.07,1175.29],[7342.5,7322.08,8172.13,7276.72,4814.1,4300.38,4144.08,3987.68,4143.4,3234.78,3929.96,2957.41,3370.59,3064.75,2334.43,2392.74,2578.4,2535.43,2300.69,2465.68,2433.24,2573.96,2489.55,2374.77,2150.88,2353.95,2635.06,1927.7,1792.06,1855.7,1844.5,1850.88,2088.18,2148.08,2025.13,1597.62,2045.94,1965.43,1781.3,1412.55,1450.97,1557,1478.11,1610.66,1357.72,1399.25,1366.53,1237.66,1571.65,1148,1041.04,1210.93,1203.1,1202.81,1433.75,1338.83,1190.31,1239.01,1070.21,1199.09,1071.19,1247.21,873.48,997.21,1158.73,1149.9,1148.16,1174.37,933.54,954.99,938.38,908.61,752.9,915.95,790.13,1081,774.03,935.53,850.24,757.39,807.83,761.76,876.2,873.7,782.15,780.2,687.1,673.9,699.82,673.67,786.69,719.33,747.38,554.09,609.78,587.12,620.7,564.36,645.85,559.13]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>DRGDefinition<\/th>\n      <th>PercentageDifference<\/th>\n      <th>MaxCostState<\/th>\n      <th>MinCostState<\/th>\n      <th>CopayMaxState<\/th>\n      <th>CopayMinState<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"columnDefs":[{"className":"dt-right","targets":[5,6]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="cheapest-and-most-expensive-states" class="section level2">
+<h2>Cheapest and Most Expensive States</h2>
+<p>Taking these states in the above grouped dataset, we can create the below graphs. They show the states that show up on the cheapest and most expensive columns the most by count.</p>
+<pre class="r"><code>ipp_proc2_max &lt;- ipp_proc2 %&gt;%
+  group_by(MaxCostState) %&gt;%
+  summarise(n = n()) %&gt;%
+  arrange(desc(n))
+
+ipp_proc2_max$MaxCostState &lt;- factor(ipp_proc2_max$MaxCostState, levels = ipp_proc2_max$MaxCostState)
+
+ggplot(data = ipp_proc2_max, aes(x = MaxCostState, y = n)) + 
+  geom_bar(fill = &quot;royal blue&quot;, stat = &#39;identity&#39;) + 
+  labs(title = &quot;Count of High Cost States&quot;,
+       subtitle = &quot;All States That Rank as Highest by Procedure&quot;) +
+  theme_bw()</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>ipp_proc2_min &lt;- ipp_proc2 %&gt;%
+  group_by(MinCostState) %&gt;%
+  summarise(n = n()) %&gt;%
+  arrange(desc(n))
+
+ipp_proc2_min$MinCostState &lt;- factor(ipp_proc2_min$MinCostState, levels = ipp_proc2_min$MinCostState)
+
+ggplot(data = ipp_proc2_min, aes(x = MinCostState, y = n)) + 
+  geom_bar(fill = &quot;royal blue&quot;, stat = &#39;identity&#39;) + 
+  labs(title = &quot;Count of Low Cost States&quot;,
+       subtitle = &quot;All States That Rank as Lowest by Procedure&quot;) +
+  theme_bw()</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-6-2.png" width="672" /></p>
+</div>
+<div id="standardized-how-do-the-states-compare-against-each-other" class="section level2">
+<h2>Standardized: How do the states compare against each other?</h2>
+<p>If you’re a Medicare benficiary with health costs on the horizon, you may want to consider retiring to Alabama and firmly forget about any salmon fishing in Alaska.</p>
+<p>Next, let’s standardize the costs for all states across all procedures and convert to z-scores. This will create a mean of 0 and allow us to compare all of the states to each other.</p>
+<pre class="r"><code>ipp_z &lt;- ipp %&gt;%
+  group_by(ProviderState) %&gt;%
+  summarise(MeanCostsAll = mean(AverageTotalPayments)) %&gt;%
+  mutate(Cost_z = round((MeanCostsAll - mean(MeanCostsAll))/sd(MeanCostsAll),2)) %&gt;%
+  mutate(High_Low = ifelse(Cost_z &lt; 0, &quot;Below&quot;, &quot;Above&quot;)) %&gt;%
+  arrange(Cost_z)
+
+ipp_z$ProviderState &lt;- factor(ipp_z$ProviderState, levels = ipp_z$ProviderState)
+
+ggplot(data = ipp_z, aes(x = ProviderState, y = Cost_z, fill = High_Low)) +
+  geom_bar(stat = &quot;identity&quot;) +
+  coord_flip() +
+  theme_bw() +
+  labs(title = &quot;Standardized Costs by State&quot;,
+       y = &quot;Z Score of State&quot;,
+       x = &quot;State&quot;) +
+  guides(fill=guide_legend(title=&quot;Above/Below Avg&quot;))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="is-there-a-correlation-with-charges-and-actual-payments" class="section level2">
+<h2>Is there a correlation with charges and actual payments</h2>
+<p>To most people, it would make sense to charge amounts corresponding with what you know you are going to be paid. If I was running a business, it wouln’t make sense for me to charge $3 when I know ahead of time that I am only going to get one half to one third of that (or 1/10 of that in a lot of cases).</p>
+<p>Contracts with the different insurance companies “insure” this. If I charge $3 for a service when I am only contracted to receive $1, why don’t I just charge $1 to begin with?</p>
+<p>The reason is that providers have an inverse incentive to keep their charges as high as possible. If my charges are low, I am more likely to get a lower contractual rate. One insurance company does not pay the same rate as another, and it is in the provider’s best interest to have the contractual rates as high as possible.</p>
+<p>The below graph shows the charges on the x axis and the actual payments on the y axis. To illustrate how skewed these charges are compared to the actual payments I’ve added a regression line with a slope of 1 and an intercept of 0. If there was a one to one relationship (I charge $1 and get paid $1) the points would all cluster around this line. This is very far from the reality.</p>
+<pre class="r"><code>ggplot(data = ipp, aes(x = AverageCoveredCharges, y = AverageTotalPayments)) +
+  geom_point(alpha = 0.5) +
+  geom_abline(intercept = 0, slope = 1, color = &quot;red&quot;) +
+  theme_bw() +
+  labs(title = &quot;Hospital Charges vs Actual Payments&quot;,
+       x = &quot;Charges for Covered Procedures&quot;,
+       y = &quot;Actual Total Payments&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>The regression line really shows how skewed these charges are compared to the payments received. Remember, the line has a slope of 1 but is nearly vertical. You may think this doesn’t matter because these charges seem arbitary, and they are most definitey arbitrary. But, if you ever find yourself without insurance or your procedure is not covered by your insurance you will be charged, and expected to pay, these insane hospital charges.</p>
+</div>
+<div id="top-25-procedures" class="section level2">
+<h2>Top 25 Procedures</h2>
+<p>How far off are the top 25 procedures. I’ve taken the nationwide average charge for each procedure and the corresponding national total payment. This of course dilutes the differences in regions, but even with that dilution the differences are astounding.</p>
+<pre class="r"><code>procedure_25 &lt;- procedure_rank[1:25,]
+
+ipp_top_25 &lt;- ipp %&gt;%
+  filter(DRGDefinition %in% procedure_25$DRGDefinition)
+
+ipp_top25_proc &lt;- ipp_top_25 %&gt;%
+  group_by(DRGDefinition) %&gt;%
+  summarise(AveragePayment =  mean(AverageTotalPayments), AverageCharge = mean(AverageCoveredCharges)) %&gt;%
+  mutate(ProcedureNumber = substr(DRGDefinition, 1, 3)) %&gt;%
+  arrange(desc(AveragePayment))
+
+ipp_top25_proc$ProcedureNumber &lt;- factor(ipp_top25_proc$ProcedureNumber, levels = ipp_top25_proc$ProcedureNumber)
+
+ggplot(data = ipp_top25_proc, aes(x = AveragePayment, xend = AverageCharge, y = ProcedureNumber)) +
+  geom_dumbbell(color=&quot;#a3c4dc&quot;, 
+                size=0.75,
+                colour_xend = &quot;red&quot;) +
+  theme(plot.title = element_text(hjust=0.5, face=&quot;bold&quot;),
+        axis.title.x = element_blank(),
+        axis.ticks=element_blank(),
+        legend.position=&quot;top&quot;,
+        panel.border=element_blank()) +
+  theme_bw() +
+  labs(title = &quot;Average Payments Compared With Average Charges by Procedure Code&quot;,
+       subtitle = &quot;Nationwide Averages, Left is Payment and Right is Charge Amount&quot;,
+       y = &quot;Procedure Number&quot;,
+       x = &quot;Dollar Amount&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" width="672" /> Even with taking averages of the averages to get to national numbers, we still have huge discrepancies between the amount charged by the hospitals and the amount actually paid for the procedure.</p>
+<p>Use the above table’s search function to match the procedure number to the procedure description.</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>My purposely sensational title aside, these high charges can hurt people.</p>
+<ul>
+<li><a href="https://www.vox.com/2016/5/13/11606760/emergency-facility-fees-american-health-care">here</a></li>
+<li><a href="https://www.rd.com/health/wellness/wildly-overinflated-hospital-costs/">here</a></li>
+<li><a href="https://www.statnews.com/2017/04/12/hospital-charge-newborn-babysitting/">here</a></li>
+</ul>
+<p>and <a href="https://medicareblog.org/outrageous-hospital-bill-126241-67/">many</a> <a href="https://www.foxbusiness.com/features/outrageous-e-r-hospital-charges-what-to-do">many</a> <a href="https://www.forbes.com/sites/rickungar/2013/05/08/the-great-american-hospital-pricing-scam-exposed-we-now-know-why-healthcare-costs-are-so-artificially-high/#45fa4dec3bff">more</a>.</p>
+<p>To fix this, the incentive for providers to have artificially inflated charge amounts would have to be removed.</p>
+<p>There are many pushes by Medicare and the major insurance companies to move away from fee for service models to performance based payments. As a data freak, I love this. Under these alternative models hospitals and provider groups would be reimbursed by quality metrics and shared savings as opposed to how many procedures they bill. Data would be shared by the insurance companies so the provider groups can track utilization of their patient population.</p>
+<p>Examples can be seen below:</p>
+<ul>
+<li><a href="https://www.uhc.com/valuebasedcare/how-value-based-care-benefits-you/for-care-providers/payment-models">here</a></li>
+<li><a href="https://www.floridablue.com/providers/tools-resources/programs/value-based-alternative-payment-programs">here</a></li>
+<li><a href="https://www.cms.gov/Medicare/Quality-Initiatives-Patient-Assessment-Instruments/Value-Based-Programs/Value-Based-Programs.html">here</a></li>
+</ul>
+<p>For future analysis of this dataset I would like to dive into the granularity within different states. I would be interested to see how much driving from one hospital to the next could lower a patient’s deductible for a given procedure.</p>
+<p>It also turns out that after spending hours on this dataset, the data is available for years more recent than 2011. I would like to see how much the costs have changed over time for the listed procedures.</p>
+<p>If there are any questions, comments, or errors in anything above, please shoot me an email at [<a href="mailto:justin.m.talbot@gmail.com">justin.m.talbot@gmail.com</a>]</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
